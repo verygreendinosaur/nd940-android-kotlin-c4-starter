@@ -1,5 +1,6 @@
 package com.udacity.project4.map
 
+import android.content.res.Resources
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -14,6 +15,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
@@ -22,6 +24,8 @@ import org.koin.android.ext.android.inject
 class MapsFragment : Fragment() {
 
     private val viewModel: SaveReminderViewModel by inject()
+    private val TAG = MapsFragment::class.java.simpleName
+
 
     var map: GoogleMap? = null
 
@@ -38,6 +42,7 @@ class MapsFragment : Fragment() {
 
         map = googleMap
 
+        setMapStyle(googleMap)
         setMapInitialPosition(googleMap)
         setMapClickListener(googleMap)
     }
@@ -70,6 +75,19 @@ class MapsFragment : Fragment() {
     private fun onSelectMapType(type: Int) {
         val map = map ?: return
         map.mapType = type
+    }
+
+    private fun setMapStyle(map: GoogleMap) {
+        try {
+            val success = map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            activity,
+                            R.raw.map_style
+                    )
+            )
+        } catch (e: Resources.NotFoundException) {
+            // Do nothing at this time
+        }
     }
 
     private fun setMapInitialPosition(map: GoogleMap) {

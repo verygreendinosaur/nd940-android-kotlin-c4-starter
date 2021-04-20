@@ -62,18 +62,12 @@ class RemindersActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         val wasResultEmpty = grantResults.isEmpty()
-
-        println("ZZZ ${grantResults[0]}")
-        println("ZZZ ${grantResults[1]}")
         val wasLocationExplicitlyDenied = grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED
-
-        println("ZZZ ${grantResults}")
         val wasBackgroundLocationExplicitlyDeniedBackground = (
                 requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE &&
                         grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED
                 )
         val wasPermissionDenied = wasResultEmpty || wasLocationExplicitlyDenied || wasBackgroundLocationExplicitlyDeniedBackground
-println("ZZZ ${wasResultEmpty} ${wasLocationExplicitlyDenied} ${wasBackgroundLocationExplicitlyDeniedBackground}")
         if (wasPermissionDenied) {
             onPermissionDenied()
         } else {
@@ -176,44 +170,26 @@ println("ZZZ ${wasResultEmpty} ${wasLocationExplicitlyDenied} ${wasBackgroundLoc
 
 
     private fun requestPermissions(isForegroundGranted: Boolean, isBackgroundGranted: Boolean) {
-//        if (isForegroundGranted && isBackgroundGranted) {
-//            return
-//        }
+        if (isForegroundGranted && isBackgroundGranted) {
+            return
+        }
 
-        var foregroundPermissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        var permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+        var requestCode: Int
 
-  
+        if (isAndroidQOrLater) {
+            permissions += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            requestCode = REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
+        } else {
+            requestCode = REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+        }
 
-        ActivityCompat.requestPermissions(this, foregroundPermissions, 1)
-//        var backgroundPermissions = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-//
-//        var requestCode: Int
-
-//        if (isAndroidQOrLater) {
-//            neededPermissions += Manifest.permission.ACCESS_BACKGROUND_LOCATION
-//            requestCode = REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
-//        } else {
-//            requestCode = REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
-//        }
-//
-//        println("requesting ${neededPermissions.size} ${neededPermissions}")
-//neededPermissions = arrayOf(Manifest.permission_group.LOCATION)
-
-//        ActivityCompat.requestPermissions(
-//                this@RemindersActivity,
-//                foregroundPermissions,
-//                100
-//        )
-
-//        if (isAndroidQOrLater) {
-//            ActivityCompat.requestPermissions(
-//                    this@RemindersActivity,
-//                    backgroundPermissions,
-//                    101
-//            )
-//        }
+        ActivityCompat.requestPermissions(
+                this@RemindersActivity,
+                permissions,
+                100
+        )
     }
 
     private fun onPermissionDenied() {
