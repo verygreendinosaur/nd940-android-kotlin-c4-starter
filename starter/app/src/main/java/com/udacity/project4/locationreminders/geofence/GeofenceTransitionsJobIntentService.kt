@@ -2,67 +2,100 @@ package com.udacity.project4.locationreminders.geofence
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.JobIntentService
 import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofenceStatusCodes
+import com.google.android.gms.location.GeofencingEvent
+import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
-import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.sendNotification
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
+
 class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
+
+    // region Properties
+    val remindersLocalRepository: ReminderDataSource by inject()
 
     private var coroutineJob: Job = Job()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + coroutineJob
 
-    companion object {
-        private const val JOB_ID = 573
+    // endregion
 
-        //        TODO: call this to start the JobIntentService to handle the geofencing transition events
-        fun enqueueWork(context: Context, intent: Intent) {
-            enqueueWork(
-                context,
-                GeofenceTransitionsJobIntentService::class.java, JOB_ID,
-                intent
-            )
+    override fun onHandleWork(intent: Intent) {
+        // 1. Get event
+        val geofencingEvent = GeofencingEvent.fromIntent(intent)
+
+        // 2. Log error, if any
+        if (geofencingEvent.hasError()) {
+            val errorMessage = GeofenceStatusCodes.getStatusCodeString(geofencingEvent.errorCode)
+            Log.e(TAG, errorMessage)
+            return
+        }
+
+        // 3. Send notification
+        handleEvent(geofencingEvent)
+    }
+
+    private fun handleEvent(event: GeofencingEvent) {
+        val geofenceTransition = event.geofenceTransition
+        val triggeringGeofences = event.triggeringGeofences
+
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER && triggeringGeofences.isNotEmpty()) {
+            sendNotification(triggeringGeofences)
+            Log.e(TAG, GEOFENCE_TRANSITION_ENTER)
+        } else {
+            Log.e(TAG, GEOFENCE_TRANSITION_OTHER)
         }
     }
 
-    override fun onHandleWork(intent: Intent) {
-        //TODO: handle the geofencing transition events and
-        // send a notification to the user when he enters the geofence area
-        //TODO call @sendNotification
-    }
-
-    //TODO: get the request id of the current geofence
     private fun sendNotification(triggeringGeofences: List<Geofence>) {
-        val requestId = ""
+        var firstGeofence = triggeringGeofences.first()
+        val requestId = firstGeofence.requestId
 
-        //Get the local repository instance
-        val remindersLocalRepository: RemindersLocalRepository by inject()
-//        Interaction to the repository has to be through a coroutine scope
         CoroutineScope(coroutineContext).launch(SupervisorJob()) {
-            //get the reminder with the request id
             val result = remindersLocalRepository.getReminder(requestId)
             if (result is Result.Success<ReminderDTO>) {
                 val reminderDTO = result.data
-                //send a notification to the user with the reminder details
                 sendNotification(
-                    this@GeofenceTransitionsJobIntentService, ReminderDataItem(
+                        this@GeofenceTransitionsJobIntentService, ReminderDataItem(
                         reminderDTO.title,
                         reminderDTO.description,
                         reminderDTO.location,
                         reminderDTO.latitude,
                         reminderDTO.longitude,
-                        reminderDTO.id
-                    )
+                        reminderDTO.id)
                 )
+                remindersLocalRepository.deleteReminder(requestId)
+            } else {
+                // Do nothing
             }
         }
     }
+
+    // region Constants
+
+    companion object {
+        private const val TAG = "GeofenceReceiver"
+        private const val GEOFENCE_TRANSITION_ENTER = "GeofenceBroadcastReceiver received a geofence transaction of enter"
+        private const val GEOFENCE_TRANSITION_OTHER = "GeofenceBroadcastReceiver received a geofence transaction of unexpected type"
+        private const val JOB_ID = 4321
+
+        fun enqueueWork(context: Context, intent: Intent) {
+            enqueueWork(
+                    context,
+                    GeofenceTransitionsJobIntentService::class.java, JOB_ID,
+                    intent
+            )
+        }
+    }
+
+    // endregion
 
 }

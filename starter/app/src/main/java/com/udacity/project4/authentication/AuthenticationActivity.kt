@@ -1,24 +1,102 @@
 package com.udacity.project4.authentication
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.IdpResponse
+import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
+import com.udacity.project4.locationreminders.RemindersActivity
 
-/**
- * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
- * signed in users to the RemindersActivity.
- */
 class AuthenticationActivity : AppCompatActivity() {
+
+    // region Lifecycle / Overrides
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_authentication)
-//         TODO: Implement the create account and sign in using FirebaseUI, use sign in using email and sign in using Google
 
-//          TODO: If the user was authenticated, send him to RemindersActivity
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            launchRemindersActivity()
+        }
 
-//          TODO: a bonus is to customize the sign in flow to look nice using :
-        //https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
-
+        setupLoginButton()
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == AUTH_REQUEST_CODE) {
+            handleValidSignInResult(requestCode, resultCode, data)
+        }
+    }
+
+    // endregion
+
+    // region Methods
+
+    private fun setupLoginButton() {
+        val loginButton: View = findViewById(R.id.login_button)
+
+        loginButton.setOnClickListener {
+            launchSignIn()
+        }
+    }
+
+    private fun launchSignIn() {
+        val providers = arrayListOf(
+                AuthUI.IdpConfig.EmailBuilder().build(),
+                AuthUI.IdpConfig.GoogleBuilder().build()
+        )
+
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(providers)
+                        .build(),
+                AUTH_REQUEST_CODE
+        )
+    }
+
+    private fun handleValidSignInResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val response = IdpResponse.fromResultIntent(data)
+
+        if (resultCode == Activity.RESULT_OK) {
+            handleSignInSuccess()
+        } else if (response != null) {
+            handleSignInError()
+        } else {
+            // User abandoned the login flow. Do nothing at this time.
+        }
+    }
+
+    private fun handleSignInSuccess() {
+        launchRemindersActivity()
+    }
+
+    private fun handleSignInError() {
+        Toast.makeText(applicationContext, ERROR_TEXT, Toast.LENGTH_LONG).show()
+    }
+
+    private fun launchRemindersActivity() {
+        val intent = Intent(this, RemindersActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    // endregion
+
+    // region Constants
+
+    companion object {
+        const val AUTH_REQUEST_CODE = 100
+        const val ERROR_TEXT = "Something went wrong -- please try again"
+    }
+
+    // endregion
+
 }

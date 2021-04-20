@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
@@ -10,16 +11,19 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.utils.SingleLiveEvent
 import kotlinx.coroutines.launch
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
-    BaseViewModel(app) {
+        BaseViewModel(app) {
     val reminderTitle = MutableLiveData<String>()
     val reminderDescription = MutableLiveData<String>()
     val reminderSelectedLocationStr = MutableLiveData<String>()
-    val selectedPOI = MutableLiveData<PointOfInterest>()
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
+
+    var selectLocation: SingleLiveEvent<LatLng> = SingleLiveEvent()
+    var selectMapType: SingleLiveEvent<Int> = SingleLiveEvent()
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
@@ -28,7 +32,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         reminderTitle.value = null
         reminderDescription.value = null
         reminderSelectedLocationStr.value = null
-        selectedPOI.value = null
         latitude.value = null
         longitude.value = null
     }
@@ -47,16 +50,18 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
      */
     fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
+
+
         viewModelScope.launch {
             dataSource.saveReminder(
-                ReminderDTO(
-                    reminderData.title,
-                    reminderData.description,
-                    reminderData.location,
-                    reminderData.latitude,
-                    reminderData.longitude,
-                    reminderData.id
-                )
+                    ReminderDTO(
+                            reminderData.title,
+                            reminderData.description,
+                            reminderData.location,
+                            reminderData.latitude,
+                            reminderData.longitude,
+                            reminderData.id
+                    )
             )
             showLoading.value = false
             showToast.value = app.getString(R.string.reminder_saved)
@@ -73,10 +78,12 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             return false
         }
 
-        if (reminderData.location.isNullOrEmpty()) {
-            showSnackBarInt.value = R.string.err_select_location
+        if (reminderData.description.isNullOrEmpty()) {
+            showSnackBarInt.value = R.string.err_enter_description
             return false
         }
+
         return true
     }
+
 }
