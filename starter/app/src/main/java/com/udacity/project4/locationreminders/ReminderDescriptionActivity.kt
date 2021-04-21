@@ -8,6 +8,8 @@ import androidx.databinding.DataBindingUtil
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityReminderDescriptionBinding
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 /**
  * Activity that displays the reminder details after the user clicks on the notification
@@ -32,9 +34,15 @@ class ReminderDescriptionActivity : AppCompatActivity() {
                 this,
                 R.layout.activity_reminder_description
         )
+
         val reminderDataItem = intent.getSerializableExtra(EXTRA_ReminderDataItem) as ReminderDataItem
+
+        val format = DecimalFormat("#.####")
+        format.roundingMode = RoundingMode.CEILING
+        val name = "${format.format(reminderDataItem.latitude)} lat, ${format.format(reminderDataItem.longitude)} long"
+
         binding.titleTextview.text = reminderDataItem.title
         binding.descriptionTextview.text = reminderDataItem.description
-        binding.locationTextview.text = "${reminderDataItem.latitude} , ${reminderDataItem.longitude}"
+        binding.locationTextview.text = reminderDataItem.location
     }
 }

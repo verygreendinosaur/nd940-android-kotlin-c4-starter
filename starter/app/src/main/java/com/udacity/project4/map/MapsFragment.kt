@@ -13,13 +13,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import org.koin.android.ext.android.inject
+import java.math.RoundingMode
+import java.text.DecimalFormat
 
 class MapsFragment : Fragment() {
 
@@ -45,6 +44,7 @@ class MapsFragment : Fragment() {
         setMapStyle(googleMap)
         setMapInitialPosition(googleMap)
         setMapClickListener(googleMap)
+        setMapPOIClickListener(googleMap)
     }
 
     override fun onCreateView(
@@ -105,8 +105,39 @@ class MapsFragment : Fragment() {
 
     private fun setMapClickListener(map: GoogleMap) {
         map.setOnMapLongClickListener { latLng ->
-            viewModel.selectLocation.setValue(latLng)
+            map.clear()
+
+            val format = DecimalFormat("#.####")
+            format.roundingMode = RoundingMode.CEILING
+            val name = "${format.format(latLng.latitude)} , ${format.format(latLng.longitude)}"
+
+            map.addMarker(
+                    MarkerOptions()
+                            .position(latLng)
+                            .title(name)
+            )
+
+            val poi = PointOfInterest(latLng, name, name)
+            selectPOI(map, poi)
         }
+    }
+
+    private fun setMapPOIClickListener(map: GoogleMap) {
+        map.setOnPoiClickListener { poi ->
+            map.clear()
+
+            map.addMarker(
+                    MarkerOptions()
+                            .position(poi.latLng)
+                            .title(poi.name)
+            )
+
+            selectPOI(map, poi)
+        }
+    }
+
+    private fun selectPOI(map: GoogleMap, poi: PointOfInterest) {
+        viewModel.selectPOI.setValue(poi)
     }
 
     companion object {

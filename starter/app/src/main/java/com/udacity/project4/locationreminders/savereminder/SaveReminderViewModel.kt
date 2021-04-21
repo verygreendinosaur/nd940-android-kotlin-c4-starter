@@ -22,7 +22,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
 
-    var selectLocation: SingleLiveEvent<LatLng> = SingleLiveEvent()
+    var selectPOI: SingleLiveEvent<PointOfInterest> = SingleLiveEvent()
     var selectMapType: SingleLiveEvent<Int> = SingleLiveEvent()
 
     /**
@@ -50,7 +50,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
      */
     fun saveReminder(reminderData: ReminderDataItem) {
         showLoading.value = true
-
 
         viewModelScope.launch {
             dataSource.saveReminder(

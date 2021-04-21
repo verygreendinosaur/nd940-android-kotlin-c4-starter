@@ -73,19 +73,16 @@ class SelectLocationFragment : BaseFragment() {
 
     private fun startObservers() {
         // User selects a location on map
-        primaryViewModel.selectLocation.observe(viewLifecycleOwner, Observer {
-            onLocationSelected(it.latitude, it.longitude)
+        primaryViewModel.selectPOI.observe(viewLifecycleOwner, Observer {
+            onLocationSelected(it.latLng.latitude, it.latLng.longitude, it.name)
         })
     }
 
-    private fun onLocationSelected(lat: Double, long: Double) {
+    private fun onLocationSelected(lat: Double, long: Double, name: String) {
         // Set lat, long, and text
-        val format = DecimalFormat("#.####")
-        format.roundingMode = RoundingMode.CEILING
-
         primaryViewModel.latitude.setValue(lat)
         primaryViewModel.longitude.setValue(long)
-        primaryViewModel.reminderSelectedLocationStr.setValue("${format.format(lat)} , ${format.format(long)}")
+        primaryViewModel.reminderSelectedLocationStr.setValue(name)
 
         // Navigate back to previous fragment
         primaryViewModel.navigationCommand.value = NavigationCommand.Back
