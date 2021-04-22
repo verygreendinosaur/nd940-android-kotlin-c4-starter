@@ -48,3 +48,26 @@ class RemindersListViewModel(
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
     }
 }
+
+
+
+
+
+class RemindersDescriptionViewModel(
+    app: Application,
+    private val dataSource: ReminderDataSource
+) : BaseViewModel(app) {
+
+    val remindersList = MutableLiveData<List<ReminderDataItem>>()
+
+    fun deleteReminder(id: String, callback: () -> Unit) {
+        viewModelScope.launch {
+            dataSource.deleteReminder(id)
+            callback()
+        }
+
+    }
+//    private fun invalidateShowNoData() {
+//        showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
+//    }
+}

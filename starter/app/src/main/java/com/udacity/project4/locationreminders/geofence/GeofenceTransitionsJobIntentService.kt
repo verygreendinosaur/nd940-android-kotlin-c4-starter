@@ -72,7 +72,8 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
                         reminderDTO.longitude,
                         reminderDTO.id)
                 )
-                remindersLocalRepository.deleteReminder(requestId)
+
+                // Note: At this time we do not delete the reminder.
             } else {
                 // Do nothing
             }

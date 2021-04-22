@@ -141,8 +141,8 @@ class MapsFragment : Fragment() {
     }
 
     companion object {
-        const val HOME_LATITUDE = 47.6101
-        const val HOME_LONGITUDE = -122.2015
+        const val HOME_LATITUDE = 47.612665
+        const val HOME_LONGITUDE = -122.204228
         const val HOME_ZOOM_LEVEL = 15f
         const val HOME_TITLE = "Home - Bellevue"
     }

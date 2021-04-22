@@ -99,14 +99,10 @@ class SaveReminderFragment : BaseFragment() {
                     }
                 }
             } else {
-                val lat = 47.6101
-                val long = -122.2015
-                val location = "Bellevue Downtown"
-
-                val reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude)
+                val reminderDataItem = ReminderDataItem(title, description, HOME_TITLE, HOME_LATITUDE, HOME_LONGITUDE)
 
                 // 1. Create Geofencing request
-                addGeofence(lat, long, reminderDataItem.id) {
+                addGeofence(HOME_LATITUDE, HOME_LONGITUDE, reminderDataItem.id) {
                     if (it) {
                         primaryViewModel.validateAndSaveReminder(reminderDataItem)
                     } else {
@@ -160,5 +156,9 @@ class SaveReminderFragment : BaseFragment() {
         const val GEOFENCE_EXPIRATION_IN_MILLISECONDS = (12 * 60 * 60 * 1000).toLong()
         const val GEOFENCE_ERROR_TEXT = "Something went wrong - please try again"
 
+        const val HOME_LATITUDE = 47.612665
+        const val HOME_LONGITUDE = -122.204228
+        const val HOME_TITLE = "Bellevue Downtown Park"
     }
+
 }

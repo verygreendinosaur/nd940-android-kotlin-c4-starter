@@ -4,12 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
+import com.udacity.project4.locationreminders.ReminderDescriptionActivity
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
@@ -64,11 +66,18 @@ class ReminderListFragment : BaseFragment() {
         )
     }
 
+    private fun navigateToDescription(reminderDataItem: ReminderDataItem) {
+        val intent = ReminderDescriptionActivity.newIntent(requireContext(), reminderDataItem)
+        startActivity(intent)
+    }
+
     private fun setupRecyclerView() {
         val adapter = RemindersListAdapter {
+            navigateToDescription(it)
+
         }
 
-        binding.reminderssRecyclerView.setup(adapter)
+        binding.remindersRecyclerView.setup(adapter)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

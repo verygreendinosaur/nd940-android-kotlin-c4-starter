@@ -90,7 +90,7 @@ class ReminderListFragmentTest {
         launchFragmentInContainer<ReminderListFragment>(null, R.style.AppTheme)
 
         onView(withId(R.id.noDataTextView)).check(matches(isDisplayed()))
-        onView(withId(R.id.reminderssRecyclerView)).check(matches(hasChildCount(0)))
+        onView(withId(R.id.remindersRecyclerView)).check(matches(hasChildCount(0)))
     }
 
     @Test
@@ -106,7 +106,7 @@ class ReminderListFragmentTest {
         launchFragmentInContainer<ReminderListFragment>(null, R.style.AppTheme)
 
         onView(withId(R.id.noDataTextView)).check(matches(not(isDisplayed())))
-        onView(withId(R.id.reminderssRecyclerView)).check(matches(hasChildCount(2)))
+        onView(withId(R.id.remindersRecyclerView)).check(matches(hasChildCount(2)))
     }
 
     @Test
